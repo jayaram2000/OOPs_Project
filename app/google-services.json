@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1099439455658",
+    "firebase_url": "https://activitytracker-46d5c.firebaseio.com",
+    "project_id": "activitytracker-46d5c",
+    "storage_bucket": "activitytracker-46d5c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1099439455658:android:88b071c614b751b5cf3fd3",
+        "android_client_info": {
+          "package_name": "com.example.activitytracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1099439455658-24jttav6i2i6tt0atvu3h29dsrseb183.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUzsF6A4WKR-uMLJ-mn1oQBGK-ptzo0gQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1099439455658-24jttav6i2i6tt0atvu3h29dsrseb183.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
