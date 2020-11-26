@@ -25,7 +25,14 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.internal.OnConnectionFailedListener;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 import java.util.Objects;
 
@@ -36,6 +43,9 @@ public class Login extends Fragment implements OnConnectionFailedListener {
     private GoogleSignInClient mGoogleSignInClient;
     GoogleSignInOptions gso;
     private static final int SIGN_IN= 1;
+    private FirebaseAuth mAuth,fAuth;
+    Boolean isDataValid=false;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -47,13 +57,23 @@ public class Login extends Fragment implements OnConnectionFailedListener {
         editTextTextPassword=v.findViewById(R.id.editTextTextPassword);
         gsign=v.findViewById(R.id.gsign);
          gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
          mGoogleSignInClient = GoogleSignIn.getClient(Objects.requireNonNull(getContext()),gso);
 
+        mAuth = FirebaseAuth.getInstance();
+        fAuth =FirebaseAuth.getInstance();
+
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                validateData(loginEmail);
+                validateData(editTextTextPassword);
+                if(isDataValid)
+                {
+                    EmailSign();
+                }
 
             }
         });
@@ -62,14 +82,39 @@ public class Login extends Fragment implements OnConnectionFailedListener {
             @Override
             public void onClick(View v) {
 
-                singIn();
+                GsingIn();
             }
         });
 
         return v;
     }
 
-    private void singIn() {
+    private void EmailSign() {
+        mAuth.signInWithEmailAndPassword(loginEmail.getText().toString(), editTextTextPassword.getText().toString())
+                .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+
+                            FirebaseUser user = mAuth.getCurrentUser();
+
+                           updateUI(user);
+                        } else {
+
+                            Toast.makeText(getActivity(), "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                            updateUI(null);
+
+                        }
+
+
+                    }
+                });
+    }
+
+
+
+    private void GsingIn() {
 
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, SIGN_IN);
@@ -89,15 +134,9 @@ public class Login extends Fragment implements OnConnectionFailedListener {
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            // Signed in successfully, show authenticated UI.
 
-            Intent login = new Intent(getActivity(), DashboardMainActivity.class);
-            startActivity(login);
-            String email=account.getEmail().toString();
+            firebaseAuthWithGoogle(account.getIdToken());
 
-
-            // passs intent for dashboardd
-            //updateUI(account);
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
@@ -107,6 +146,68 @@ public class Login extends Fragment implements OnConnectionFailedListener {
         }
     }
 
+
+    private void firebaseAuthWithGoogle(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d("Signing success", "signInWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            updateUIGsign(user);
+
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w("failure", "signInWithCredential:failure", task.getException());
+                            Toast.makeText(getActivity(),"Authentication Failed.",Toast.LENGTH_SHORT);
+
+                            updateUI(null);
+                        }
+
+
+                    }
+                });
+    }
+
+
+
+    private void validateData(EditText field) {
+        if(field.getText().toString().isEmpty()){
+            isDataValid = false;
+            field.setError("Required Field.");
+        }else {
+            isDataValid = true;
+        }
+    }
+// Both method login provides a Firebase object
+private void updateUIGsign(FirebaseUser user) {
+     if(user!=null)
+         {
+             Intent dashboard = new Intent(getActivity(),DashboardMainActivity.class);
+             startActivity(dashboard);
+         }
+
+}
+    private void updateUI(FirebaseUser user) {
+
+        if(user!=null && user.isEmailVerified())
+        {
+            Intent dashboard = new Intent(getActivity(),DashboardMainActivity.class);
+            startActivity(dashboard);
+        }
+        else if(user==null)
+        {
+            Toast.makeText(getActivity(),"Please check your credentials or Register Account",Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            Toast.makeText(getActivity(),"Please Verify Email",Toast.LENGTH_SHORT).show();
+        }
+
+    }
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
     Toast.makeText(getActivity(),connectionResult.getErrorMessage(),Toast.LENGTH_SHORT).show();

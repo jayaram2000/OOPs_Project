@@ -8,6 +8,7 @@ import android.os.Bundle;
 
 import com.google.android.material.tabs.TabItem;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
     TabLayout tabs;
@@ -48,4 +49,5 @@ public class MainActivity extends AppCompatActivity {
 
         pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabs));
     }
+
 }

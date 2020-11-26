@@ -14,10 +14,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.activitytracker.Dashboard.DashboardMainActivity;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 
 public class Signup extends Fragment {
@@ -63,23 +67,46 @@ public class Signup extends Fragment {
 
        if(isDataValid){
             // proceed with the registration of the user
-            fAuth.createUserWithEmailAndPassword(personEmailAddress.getText().toString(),personPass.getText().toString()).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                @Override
-                public void onSuccess(AuthResult authResult) {
-                    Toast.makeText(getActivity(), "User Account is Created.", Toast.LENGTH_SHORT).show();
+    try {
+        fAuth.createUserWithEmailAndPassword(personEmailAddress.getText().toString(),personPass.getText().toString()).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+            @Override
+            public void onSuccess(AuthResult authResult) {
+                Toast.makeText(getActivity(),"Please check email and verify",Toast.LENGTH_SHORT).show();
+                FirebaseUser user = authResult.getUser();
+
+                user.sendEmailVerification().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
 
 
-                    Intent phone = new Intent(getActivity(), VerifyPhone.class);
-                    phone.putExtra("phone", "+" + phoneCountryCode.getText().toString() + phoneNumber.getText().toString());
-                    Log.d("yee", "onSuccess: yolo");
-                    startActivity(phone);
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(getActivity(), "Error !" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+
+                        Intent EmailVerify = new Intent(getActivity(), VerifyEmail.class);
+                        startActivity(EmailVerify);
+
+
+
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getActivity(),"Erro occurred while sending email verification",Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getActivity(), "Error ! Failed to add user ", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    catch (Exception e)
+    {
+        Toast.makeText(getContext(),"Couldn't Register the user",Toast.LENGTH_SHORT).show();
+    }
 
         }
             }
