@@ -11,8 +11,12 @@
         android:roundIcon="@mipmap/logo_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Noaction">
-        <activity android:name=".VerifyEmail"></activity>
-        <activity android:name=".Dashboard.DashboardMainActivity"></activity>
+        <activity
+            android:name=".Dashboard.Note_details"
+            android:label="@string/title_activity_note_details"
+            android:theme="@style/Theme.Noaction.NoActionBar"></activity>
+        <activity android:name=".VerifyEmail" />
+        <activity android:name=".Dashboard.DashboardMainActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

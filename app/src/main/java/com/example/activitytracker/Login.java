@@ -197,6 +197,7 @@ private void updateUIGsign(FirebaseUser user) {
         {
             Intent dashboard = new Intent(getActivity(),DashboardMainActivity.class);
             startActivity(dashboard);
+
         }
         else if(user==null)
         {
