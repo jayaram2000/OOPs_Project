@@ -11,10 +11,11 @@
         android:roundIcon="@mipmap/logo_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Noaction">
+        <activity android:name=".Reminder.Remindermain"></activity>
         <activity
             android:name=".Dashboard.add_notes"
             android:label="@string/title_activity_add_notes"
-            android:theme="@style/Theme.Noaction.NoActionBar"></activity>
+            android:theme="@style/Theme.Noaction.NoActionBar" />
         <activity
             android:name=".Dashboard.Note_details"
             android:label="@string/title_activity_note_details"

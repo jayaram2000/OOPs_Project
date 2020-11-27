@@ -1,7 +1,6 @@
 package com.example.activitytracker.Dashboard;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -14,29 +13,32 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.activitytracker.Dashboard.model.Adapter;
 import com.example.activitytracker.Dashboard.model.Note;
 import com.example.activitytracker.MainActivity;
 import com.example.activitytracker.R;
+import com.example.activitytracker.Reminder.Remindermain;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
@@ -77,9 +79,10 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
 
         name=nav_view.findViewById(R.id.userDisplayName);
         email=nav_view.findViewById(R.id.userDisplayEmail);
-        try{
+        //Need to add user data in nav bar
+       /* try{
             Log.d("uid", "onCreate: "+firebaseUser.getUid().toString());
-          DocumentReference doc = firebaseFirestore.collection("user").document(firebaseUser.getUid()).collection("user_info").document(firebaseUser.getDisplayName());
+          DocumentReference doc = firebaseFirestore.collection("user").document(firebaseUser.getUid());
             doc.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
                 @Override
                 public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -88,9 +91,7 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
                 }
             });
 
-            //TO DO  Add name and profession once database is connected
-            //name.setText(firebaseUser.getDisplayName().toString());
-            //email.setText(firebaseUser.getEmail().toString());
+
         }
         catch (Exception e)
         {
@@ -98,8 +99,8 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
             Log.d("yo", "onCreate: "+e.getMessage());
         }
 
+            */
 
-      // Query query = firebaseFirestore.collection("user").document(firebaseUser.getUid()).collection("notes");
        Query query = firebaseFirestore.collection("notes").document(firebaseUser.getUid()).collection("usernotes");
 
 
@@ -117,6 +118,7 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
                 final int code = getRandomColor();
 
                 noteViewHolder.mCardView.setCardBackgroundColor(noteViewHolder.view.getResources().getColor(code,null));
+                String doc = noteAdapter.getSnapshots().getSnapshot(i).getId();
 
                 noteViewHolder.view.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -124,11 +126,61 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
                         Intent i = new Intent(v.getContext(), Note_details.class);
                         i.putExtra("title",note.getTitle());
                         i.putExtra("content",note.getContent());
-                        // i.putExtra("code",code);
+                        i.putExtra("noteid",doc);
+                        i.putExtra("code",code);
                         v.getContext().startActivity(i);
                     }
                 });
 
+
+                ImageView img = noteViewHolder.view.findViewById(R.id.menuIcon);
+                img.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        PopupMenu menu = new PopupMenu(v.getContext(),v);
+                        menu.setGravity(Gravity.START);
+                        menu.getMenu().add("Set Reminder").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                Intent reminder = new Intent(getApplicationContext(), Remindermain.class);
+                                startActivity(reminder);
+                                return false;
+                            }
+
+                            }
+                        );
+
+                        menu.getMenu().add("Share").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                Intent sendIntent = new Intent();
+                                sendIntent.setAction(Intent.ACTION_SEND);
+                                sendIntent.putExtra(Intent.EXTRA_TEXT,"Title: "+note.getTitle()+"\nContent: "+note.getContent());
+                                sendIntent.setType("text/plain");
+
+                                Intent shareIntent = Intent.createChooser(sendIntent, null);
+                                startActivity(shareIntent);
+                                return false;
+                            }
+                        });
+
+                        menu.getMenu().add("Delete").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                DocumentReference del = firebaseFirestore.collection("notes").document(firebaseUser.getUid()).collection("usernotes").document(doc);
+                                del.delete().addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(getApplicationContext(),"Error Failed to delete please try again",Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                                return false;
+                            }
+                        });
+
+                        menu.show();
+                    }
+                });
             }
 
             @NonNull
@@ -139,7 +191,7 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
                 return new NoteViewHolder(view);
             }
         };
-        Log.d("finald", "onCreate: "+(noteAdapter==null));
+
         FloatingActionButton fab = findViewById(R.id.addNoteFloat);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override

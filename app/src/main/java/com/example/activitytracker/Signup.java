@@ -76,7 +76,7 @@ public class Signup extends Fragment {
                 }
 
                 if(isDataValid){
-                    // proceed with the registration of the user
+
                     try {
                         fAuth.createUserWithEmailAndPassword(personEmailAddress.getText().toString(),personPass.getText().toString()).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                             @Override
@@ -98,7 +98,7 @@ public class Signup extends Fragment {
                                 });
 
                                 userID = fAuth.getCurrentUser().getUid();
-                                DocumentReference documentReference = fstore.collection("users").document(userID).collection("user_info").document(fullName);
+                                DocumentReference documentReference = fstore.collection("users").document(userID);
                                 Map<String, Object> User= new HashMap<>();
                                 User.put("fullName", fullName);
                                 User.put("email", email);
@@ -120,7 +120,7 @@ public class Signup extends Fragment {
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(getActivity(), "Error! Failed to add user ", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), "Error! Failed to add user :"+e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
