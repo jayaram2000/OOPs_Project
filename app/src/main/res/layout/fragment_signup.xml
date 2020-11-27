@@ -50,8 +50,22 @@
                 app:layout_constraintTop_toBottomOf="@+id/registerFullName" />
 
             <EditText
+                android:id="@+id/profession"
+                android:layout_width="359dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:ems="10"
+                android:hint="Profession"
+                android:inputType="textPersonName"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/registerEmail" />
+
+            <EditText
                 android:id="@+id/regsiterPass"
-                android:layout_width="0dp"
+                android:layout_width="359dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
@@ -61,13 +75,14 @@
                 android:inputType="textPassword"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/registerEmail" />
+                app:layout_constraintTop_toBottomOf="@+id/profession" />
 
             <EditText
                 android:id="@+id/retypePass"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
                 android:ems="10"
                 android:hint="Retype Password"
