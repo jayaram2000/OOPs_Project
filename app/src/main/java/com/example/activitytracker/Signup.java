@@ -98,7 +98,7 @@ public class Signup extends Fragment {
                 });
 
                 userID = fAuth.getCurrentUser().getUid();
-                DocumentReference documentReference = fstore.collection("users").document(userID);
+                DocumentReference documentReference = fstore.collection("users").document(userID).collection("user_info").document(fullName);
                 Map<String, Object> User= new HashMap<>();
                 User.put("fullName", fullName);
                 User.put("email", email);
