@@ -14,22 +14,25 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.activitytracker.Dashboard.DashboardMainActivity;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class Signup extends Fragment {
-    EditText personFullName,personEmailAddress,personPass,personConfPass,phoneCountryCode,phoneNumber;
+    EditText personFullName,personEmailAddress,personPass,personConfPass,phoneCountryCode,phoneNumber,profession;
     Button regsiterAccountBtn;
     Boolean isDataValid = false;
     FirebaseAuth fAuth;
-
+    FirebaseFirestore fstore;
+    String userID;
 
 
     @Override
@@ -43,8 +46,10 @@ public class Signup extends Fragment {
         personConfPass = v.findViewById(R.id.retypePass);
         phoneCountryCode = v.findViewById(R.id.countryCode);
         phoneNumber = v.findViewById(R.id.registerPhoneNumber);
+        profession = v.findViewById(R.id.profession);
 
         fAuth = FirebaseAuth.getInstance();
+        fstore = FirebaseFirestore.getInstance();
         regsiterAccountBtn = v.findViewById(R.id.registerBtn);
 
         regsiterAccountBtn.setOnClickListener(new View.OnClickListener() {
@@ -56,7 +61,12 @@ public class Signup extends Fragment {
                 validateData(personConfPass);
                 validateData(phoneCountryCode);
                 validateData(phoneNumber);
+                //validateData(profession);
 
+                String email = personEmailAddress.getText().toString();
+                String fullName = personFullName.getText().toString();
+                String phoneNo = phoneCountryCode.getText().toString() + phoneNumber.getText().toString();
+                String Profession = profession.getText().toString();
 
                 if(!personPass.getText().toString().equals(personConfPass.getText().toString())){
                     isDataValid = false;
@@ -77,29 +87,40 @@ public class Signup extends Fragment {
                 user.sendEmailVerification().addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-
-
-
                         Intent EmailVerify = new Intent(getActivity(), VerifyEmail.class);
                         startActivity(EmailVerify);
-
-
-
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getActivity(),"Erro occurred while sending email verification",Toast.LENGTH_SHORT).show();
-
+                        Toast.makeText(getActivity(),"Error occurred while sending email verification",Toast.LENGTH_SHORT).show();
                     }
                 });
 
+                userID = fAuth.getCurrentUser().getUid();
+                DocumentReference documentReference = fstore.collection("users").document(userID);
+                Map<String, Object> User= new HashMap<>();
+                User.put("fullName", fullName);
+                User.put("email", email);
+                User.put("phoneNumber", phoneNo);
+                User.put("profession", Profession);
 
+                documentReference.set(User).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("TAG", "OnSuccess: user details are saved for "+ userID);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("TAG", "OnFailure: "+ e.toString());
+                    }
+                });
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getActivity(), "Error ! Failed to add user ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Error! Failed to add user ", Toast.LENGTH_SHORT).show();
             }
         });
     }
