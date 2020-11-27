@@ -108,6 +108,7 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
         {
             case R.id.addNote:
             {
+                startActivity(new Intent(getApplicationContext(),add_notes.class));
                 break;
             }
             case R.id.logout:
