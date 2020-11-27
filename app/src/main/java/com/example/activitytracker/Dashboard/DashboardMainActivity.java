@@ -3,6 +3,7 @@ package com.example.activitytracker.Dashboard;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,6 +13,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -87,19 +89,39 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
         titles.add("Jayaram J");
         content.add("the myth the legenfd");
 
-        titles.add("Jayaram J");
-        content.add("the myth the legenfd");
+        titles.add("physics");
+        content.add("t is a long established fact that a reader will be distracted by the");
 
-        titles.add("Jayaram J");
-        content.add("the myth the legenfd the myth the legenfd the myth the legenfd the myth the legenfd");
-        titles.add("Jayaram J");
-        content.add("the myth the legenfd");
+        titles.add("Computer");
+        content.add("using Lorem Ipsum is that it has a more-or-less normal distribution");
+        titles.add("Jayaram J3");
+        content.add("over the years, sometimes by accident, sometimes on purpose");
 
         adapter= new Adapter(titles,content);
         noteLists.setLayoutManager(new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL));
         noteLists.setAdapter(adapter);
 
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+       getMenuInflater().inflate(R.menu.search_bar,menu);
+       MenuItem item = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) item.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
+                return false;
+            }
+        });
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

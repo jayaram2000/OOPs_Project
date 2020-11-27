@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,17 +17,23 @@ import com.example.activitytracker.Dashboard.Note_details;
 import com.example.activitytracker.R;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
+public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> implements Filterable {
     List<String> titles;
     List<String> content;
+    List<String> titelsAll;
+    List<String> contentall;
 
     public Adapter(List<String> title, List<String> content)
     {
         this.titles = title;
         this.content = content;
+        this.titelsAll=new ArrayList<>(titles);
+        this.contentall=new ArrayList<>(content);
+
     }
     @NonNull
     @Override
@@ -79,6 +87,63 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
             return titles.size();
     }
+
+    @Override
+    public Filter getFilter() {
+        return filter;
+    }
+    Filter filter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+          List<String> filterdList = new ArrayList<>();
+          if(constraint.toString().isEmpty())
+          {
+              for(int i=0;i<titelsAll.size();i++)
+              {
+                  filterdList.add(titelsAll.get(i));
+                  filterdList.add(contentall.get(i));
+              }
+            //  filterdList.addAll(titelsAll);
+
+          }
+          else {
+
+              for(int i=0;i<titelsAll.size();i++)
+              {
+                  if(contentall.get(i).toLowerCase().contains(constraint.toString().toLowerCase())){
+                      filterdList.add(titelsAll.get(i));
+                      filterdList.add(contentall.get(i));
+                  }
+                  else  if(titelsAll.get(i).toLowerCase().contains(constraint.toString().toLowerCase())){
+                      filterdList.add(titelsAll.get(i));
+                      filterdList.add(contentall.get(i));
+                  }
+              }
+          }
+        FilterResults filterResults = new FilterResults();
+            filterResults.values=filterdList;
+
+            return filterResults;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+        titles.clear();
+        content.clear();
+        //titles.addAll((Collection<? extends String>) results.values);
+            List<String> full = new ArrayList<>();
+            full.addAll((Collection<? extends String>) results.values);
+           for(int i = 0; i<(full.size()); i=i+2)
+           {
+            titles.add(full.get(i));
+            content.add(full.get(i+1));
+           }
+
+
+
+        notifyDataSetChanged();
+        }
+    };
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView noteTitle,noteContent;
