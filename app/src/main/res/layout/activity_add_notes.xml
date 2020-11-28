@@ -17,17 +17,17 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/Theme.Noaction.PopupOverlay">
-        <EditText
-            android:id="@+id/addNoteTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@android:color/transparent"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:text="@android:string/untitled"
-            android:textColor="#fff"
-            android:textColorHint="#FFFFFF"
-            android:textStyle="bold" />
+            <EditText
+                android:id="@+id/addNoteTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@android:color/transparent"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="@android:string/untitled"
+                android:textColor="#fff"
+                android:textColorHint="#FFFFFF"
+                android:textStyle="bold" />
         </androidx.appcompat.widget.Toolbar>
 
     </com.google.android.material.appbar.AppBarLayout>

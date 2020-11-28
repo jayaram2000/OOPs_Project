@@ -17,6 +17,7 @@
             android:label="@string/title_activity_add_notes"
             android:theme="@style/Theme.Noaction.NoActionBar" />
         <activity
+
             android:name=".Dashboard.Note_details"
             android:label="@string/title_activity_note_details"
             android:theme="@style/Theme.Noaction.NoActionBar" />
@@ -29,6 +30,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <receiver
+            android:name=".AlarmReceiver"
+            android:enabled="true"
+            android:exported="true"/>
     </application>
 
 </manifest>

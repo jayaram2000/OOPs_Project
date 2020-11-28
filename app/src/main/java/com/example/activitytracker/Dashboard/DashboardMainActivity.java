@@ -3,6 +3,7 @@ package com.example.activitytracker.Dashboard;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -12,6 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.DatePickerDialog;
+import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,12 +26,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.example.activitytracker.Dashboard.model.Adapter;
+import com.example.activitytracker.Dashboard.model.FireBaseAdapter;
 import com.example.activitytracker.Dashboard.model.Note;
 import com.example.activitytracker.MainActivity;
 import com.example.activitytracker.R;
@@ -49,8 +61,11 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 public class DashboardMainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -66,11 +81,11 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
 
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard_main);
-
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         firebaseFirestore = FirebaseFirestore.getInstance();
@@ -213,7 +228,110 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
         noteLists.setAdapter(noteAdapter);
 
 
+
     }
+    private void firebaseSearch(String s) {
+
+
+        Query FireSearchQuery = firebaseFirestore.collection("notes").document(firebaseUser.getUid()).collection("usernotes").orderBy("title").startAt("s").endAt("s" + "\uf8ff");
+
+
+        FirestoreRecyclerOptions<Note> Fsearch = new FirestoreRecyclerOptions.Builder<Note>()
+                .setQuery(FireSearchQuery, Note.class)
+                .build();
+
+       // noteAdapter.updateoptions(Fsearch);
+       noteAdapter = new FirestoreRecyclerAdapter<Note, NoteViewHolder>(Fsearch) {
+            @Override
+            protected void onBindViewHolder(@NonNull NoteViewHolder noteViewHolder, int i, @NonNull Note note) {
+
+                noteViewHolder.noteTitle.setText(note.getTitle());
+                noteViewHolder.noteContent.setText(note.getContent());
+                final int code = getRandomColor();
+
+                noteViewHolder.mCardView.setCardBackgroundColor(noteViewHolder.view.getResources().getColor(code, null));
+                String doc = noteAdapter.getSnapshots().getSnapshot(i).getId();
+
+                noteViewHolder.view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent i = new Intent(v.getContext(), Note_details.class);
+                        i.putExtra("title", note.getTitle());
+                        i.putExtra("content", note.getContent());
+                        i.putExtra("noteid", doc);
+                        i.putExtra("code", code);
+                        v.getContext().startActivity(i);
+                    }
+                });
+
+
+                ImageView img = noteViewHolder.view.findViewById(R.id.menuIcon);
+                img.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        PopupMenu menu = new PopupMenu(v.getContext(), v);
+                        menu.setGravity(Gravity.START);
+                        menu.getMenu().add("Set Reminder").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                                                                                          @Override
+                                                                                          public boolean onMenuItemClick(MenuItem item) {
+
+                                                                                              Intent reminder = new Intent(getApplicationContext(), Remindermain.class);
+                                                                                              startActivity(reminder);
+                                                                                              return false;
+                                                                                          }
+
+                                                                                      }
+                        );
+
+                        menu.getMenu().add("Share").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                Intent sendIntent = new Intent();
+                                sendIntent.setAction(Intent.ACTION_SEND);
+                                sendIntent.putExtra(Intent.EXTRA_TEXT, "Title: " + note.getTitle() + "\nContent: " + note.getContent());
+                                sendIntent.setType("text/plain");
+
+                                Intent shareIntent = Intent.createChooser(sendIntent, null);
+                                startActivity(shareIntent);
+                                return false;
+                            }
+                        });
+
+                        menu.getMenu().add("Delete").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                DocumentReference del = firebaseFirestore.collection("notes").document(firebaseUser.getUid()).collection("usernotes").document(doc);
+                                del.delete().addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(getApplicationContext(), "Error Failed to delete please try again", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                                return false;
+                            }
+                        });
+
+                        menu.show();
+                    }
+                });
+
+            }
+
+            @NonNull
+            @Override
+            public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.note_view, parent, false);
+                return new NoteViewHolder(view);
+            }
+        };
+
+        Log.d("mudiyala", "firebaseSearch: evel");
+
+        noteLists.setAdapter(noteAdapter);
+
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -223,6 +341,7 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+
                firebaseSearch(query);
 
                 return false;
@@ -297,103 +416,6 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
 
 
 
-    private void firebaseSearch(String s) {
-
-        Query FireSearchQuery = firebaseFirestore.collection("notes").document(firebaseUser.getUid()).collection("usernotes").orderBy("title").startAt("s").endAt("s" + "\uf8ff");
-
-
-        FirestoreRecyclerOptions<Note> Fsearch = new FirestoreRecyclerOptions.Builder<Note>()
-                .setQuery(FireSearchQuery, Note.class)
-                .build();
-
-
-        noteAdapter = new FirestoreRecyclerAdapter<Note, NoteViewHolder>(Fsearch) {
-            @Override
-            protected void onBindViewHolder(@NonNull NoteViewHolder noteViewHolder, int i, @NonNull Note note) {
-                noteViewHolder.noteTitle.setText(note.getTitle());
-                noteViewHolder.noteContent.setText(note.getContent());
-                final int code = getRandomColor();
-
-                noteViewHolder.mCardView.setCardBackgroundColor(noteViewHolder.view.getResources().getColor(code, null));
-                String doc = noteAdapter.getSnapshots().getSnapshot(i).getId();
-
-                noteViewHolder.view.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent i = new Intent(v.getContext(), Note_details.class);
-                        i.putExtra("title", note.getTitle());
-                        i.putExtra("content", note.getContent());
-                        i.putExtra("noteid", doc);
-                        i.putExtra("code", code);
-                        v.getContext().startActivity(i);
-                    }
-                });
-
-
-                ImageView img = noteViewHolder.view.findViewById(R.id.menuIcon);
-                img.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        PopupMenu menu = new PopupMenu(v.getContext(), v);
-                        menu.setGravity(Gravity.START);
-                        menu.getMenu().add("Set Reminder").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                                                                                          @Override
-                                                                                          public boolean onMenuItemClick(MenuItem item) {
-                                                                                              Intent reminder = new Intent(getApplicationContext(), Remindermain.class);
-                                                                                              startActivity(reminder);
-                                                                                              return false;
-                                                                                          }
-
-                                                                                      }
-                        );
-
-                        menu.getMenu().add("Share").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                            @Override
-                            public boolean onMenuItemClick(MenuItem item) {
-                                Intent sendIntent = new Intent();
-                                sendIntent.setAction(Intent.ACTION_SEND);
-                                sendIntent.putExtra(Intent.EXTRA_TEXT, "Title: " + note.getTitle() + "\nContent: " + note.getContent());
-                                sendIntent.setType("text/plain");
-
-                                Intent shareIntent = Intent.createChooser(sendIntent, null);
-                                startActivity(shareIntent);
-                                return false;
-                            }
-                        });
-
-                        menu.getMenu().add("Delete").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                            @Override
-                            public boolean onMenuItemClick(MenuItem item) {
-                                DocumentReference del = firebaseFirestore.collection("notes").document(firebaseUser.getUid()).collection("usernotes").document(doc);
-                                del.delete().addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(getApplicationContext(), "Error Failed to delete please try again", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                                return false;
-                            }
-                        });
-
-                        menu.show();
-                    }
-                });
-
-            }
-
-            @NonNull
-            @Override
-            public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.note_view, parent, false);
-                return new NoteViewHolder(view);
-            }
-        };
-
-
-        noteLists.setAdapter(noteAdapter);
-
-    }
 
     @Override
     protected void onStart() {

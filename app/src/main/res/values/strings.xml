@@ -22,4 +22,14 @@
         <item>Student</item>
         <item>Other</item>
     </string-array>
+    <string-array name="frequencyList">
+        <item>Do not Repeat</item>
+        <item>Daily</item>
+        <item>Weekly</item>
+    </string-array>
+
+    <string name="email">Send Email</string>
+    <string name="pick_a_time">Pick a Time</string>
+    <string name="pick_a_date">Pick a Date</string>
+    <string name="remainder_details">Remainder details</string>
 </resources>
