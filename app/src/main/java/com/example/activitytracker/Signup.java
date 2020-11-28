@@ -171,7 +171,7 @@ public class Signup extends Fragment {
                                 }
 
                                 for (int i = 0; i < 3; i++) {
-                                    DocumentReference doc = fstore.collection("notes").document(user.getUid()).collection("usernotes").document(titles.get(i));
+                                    DocumentReference doc = fstore.collection("notes").document(user.getUid()).collection("usernotes").document();
                                     Map<String, Object> newnote = new HashMap<>();
 
                                     newnote.put("title", titles.get(i));

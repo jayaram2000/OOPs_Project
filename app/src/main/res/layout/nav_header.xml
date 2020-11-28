@@ -42,7 +42,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="8dp"
 
-            android:text="Take Your Notebook With You "
+            android:text="Track and Trigger Application "
             android:textAlignment="viewStart"
             android:textColor="#FFFFFF"
             android:textSize="16sp"

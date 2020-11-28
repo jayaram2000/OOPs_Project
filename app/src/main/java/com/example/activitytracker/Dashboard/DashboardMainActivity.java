@@ -19,7 +19,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -33,13 +32,18 @@ import com.example.activitytracker.Reminder.Remindermain;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,12 +53,13 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
     DrawerLayout drawerLayout;
     ActionBarDrawerToggle toggle;
     NavigationView nav_view;
-    EditText name,email;
+    TextView name,email;
     RecyclerView noteLists;
     Adapter adapter;
     FirebaseFirestore firebaseFirestore;
     FirestoreRecyclerAdapter<Note,NoteViewHolder> noteAdapter;
     FirebaseUser firebaseUser;
+    private DatabaseReference mDatabase;
 
 
 
@@ -66,6 +71,8 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         firebaseFirestore =FirebaseFirestore.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -80,26 +87,29 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
         name=nav_view.findViewById(R.id.userDisplayName);
         email=nav_view.findViewById(R.id.userDisplayEmail);
         //Need to add user data in nav bar
-       /* try{
-            Log.d("uid", "onCreate: "+firebaseUser.getUid().toString());
-          DocumentReference doc = firebaseFirestore.collection("user").document(firebaseUser.getUid());
-            doc.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
+        try {
+           Log.d("uid", "onCreate: " + firebaseUser.getUid().toString());
+            DocumentReference doc = firebaseFirestore.collection("users").document(firebaseUser.getUid());
+
+           /* doc.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
                 @Override
                 public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                    Log.d("onaku enapha", "onEvent: just before thererror");
                     name.setText(value.get("profession").toString());
                     email.setText(value.get("email").toString());
                 }
-            });
-
-
+            });*/
         }
         catch (Exception e)
         {
-          //  Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_SHORT).show();
-            Log.d("yo", "onCreate: "+e.getMessage());
+            Log.d("erororo", "onCreate: "+e.getMessage());
         }
 
-            */
+
+
+
+
+
 
        Query query = firebaseFirestore.collection("notes").document(firebaseUser.getUid()).collection("usernotes");
 
@@ -207,7 +217,9 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
         toggle.syncState();
 
         noteLists.setLayoutManager(new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL));
+      //set adapter was here
         noteLists.setAdapter(noteAdapter);
+
 
 
     }
@@ -220,12 +232,14 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                firebaseSearch(query);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
+              //  adapter.getFilter().filter(newText);
+               firebaseSearch(newText);
                 return false;
             }
         });
@@ -239,6 +253,7 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
             case R.id.addNote:
             {
                 startActivity(new Intent(getApplicationContext(),add_notes.class));
+
                 break;
             }
             case R.id.logout:
@@ -302,5 +317,112 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
         if (noteAdapter != null) {
             noteAdapter.stopListening();
         }
+    }
+
+    private  void firebaseSearch(String s)
+    {
+
+        Query FireSearchQuery = firebaseFirestore.collection("notes").document(firebaseUser.getUid()).collection("usernotes").orderBy("sdd").startAt(s).endAt(s+"\uf8ff");
+
+
+       /* firebaseFirestore.collection("notes").document(firebaseUser.getUid()).collection("usernotes")
+                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+            }
+        });
+
+        */
+
+
+        FirestoreRecyclerOptions<Note> fsearch = new FirestoreRecyclerOptions.Builder<Note>()
+                .setQuery(FireSearchQuery,Note.class)
+                .build();
+        FirestoreRecyclerAdapter<Note, NoteViewHolder> firestoreRecyclerAdapter = new FirestoreRecyclerAdapter<Note, NoteViewHolder>(fsearch) {
+            @Override
+            protected void onBindViewHolder(@NonNull NoteViewHolder noteViewHolder, int i, @NonNull Note note) {
+                noteViewHolder.noteTitle.setText(note.getTitle());
+                noteViewHolder.noteContent.setText(note.getContent());
+                final int code = getRandomColor();
+
+                noteViewHolder.mCardView.setCardBackgroundColor(noteViewHolder.view.getResources().getColor(code,null));
+                String doc = noteAdapter.getSnapshots().getSnapshot(i).getId();
+
+                noteViewHolder.view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent i = new Intent(v.getContext(), Note_details.class);
+                        i.putExtra("title",note.getTitle());
+                        i.putExtra("content",note.getContent());
+                        i.putExtra("noteid",doc);
+                        i.putExtra("code",code);
+                        v.getContext().startActivity(i);
+                        finish();
+                    }
+                });
+
+
+                ImageView img = noteViewHolder.view.findViewById(R.id.menuIcon);
+                img.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        PopupMenu menu = new PopupMenu(v.getContext(),v);
+                        menu.setGravity(Gravity.START);
+                        menu.getMenu().add("Set Reminder").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                                                                                          @Override
+                                                                                          public boolean onMenuItemClick(MenuItem item) {
+                                                                                              Intent reminder = new Intent(getApplicationContext(), Remindermain.class);
+                                                                                              startActivity(reminder);
+                                                                                              finish();
+                                                                                              return false;
+                                                                                          }
+
+                                                                                      }
+                        );
+
+                        menu.getMenu().add("Share").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                Intent sendIntent = new Intent();
+                                sendIntent.setAction(Intent.ACTION_SEND);
+                                sendIntent.putExtra(Intent.EXTRA_TEXT,"Title: "+note.getTitle()+"\nContent: "+note.getContent());
+                                sendIntent.setType("text/plain");
+
+                                Intent shareIntent = Intent.createChooser(sendIntent, null);
+                                startActivity(shareIntent);
+                                return false;
+                            }
+                        });
+
+                        menu.getMenu().add("Delete").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                DocumentReference del = firebaseFirestore.collection("notes").document(firebaseUser.getUid()).collection("usernotes").document(doc);
+                                del.delete().addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(getApplicationContext(),"Error Failed to delete please try again",Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                                return false;
+                            }
+                        });
+
+                        menu.show();
+                    }
+                });
+                ///Might have to be removied
+                noteLists.setAdapter(noteAdapter);
+            }
+
+            @NonNull
+            @Override
+            public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.note_view,parent,false);
+                return new NoteViewHolder(view);
+            }
+        };
+
     }
 }

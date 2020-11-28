@@ -61,7 +61,7 @@ public class add_notes extends AppCompatActivity {
                     return;
                 }
 
-                DocumentReference doc = fStore.collection("notes").document(user.getUid()).collection("usernotes").document(title);
+                DocumentReference doc = fStore.collection("notes").document(user.getUid()).collection("usernotes").document();
                 Map<String,Object> newnote = new HashMap<>();
                 newnote.put("title",title);
                 newnote.put("content",content);
