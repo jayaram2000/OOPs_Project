@@ -9,10 +9,11 @@
     <EditText
         android:id="@+id/contentid"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:isScrollContainer="true"
         android:padding="18dp"
         android:scrollbars="vertical"
         android:text="TextView"
-        android:textSize="24sp" />
+        android:textSize="24sp"
+        android:background="@null"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
