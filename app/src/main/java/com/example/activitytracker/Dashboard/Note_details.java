@@ -183,8 +183,8 @@ public class Note_details extends AppCompatActivity {
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                 calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                calendar.set(Calendar.MINUTE, minute);
-                calendar.set(Calendar.SECOND, 0);
+                calendar.set(Calendar.MINUTE, minute-1);
+                calendar.set(Calendar.SECOND, 59);
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm a");
                 time = simpleDateFormat.format(calendar.getTime());
                 timeField.setText(time);
