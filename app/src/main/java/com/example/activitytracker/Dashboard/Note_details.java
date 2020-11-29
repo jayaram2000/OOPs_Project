@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.squareup.okhttp.internal.http.HttpDate.format;
+
 public class Note_details extends AppCompatActivity {
 
     private PendingIntent pendingIntent;
@@ -74,8 +76,8 @@ public class Note_details extends AppCompatActivity {
         firebaseFirestore =FirebaseFirestore.getInstance();
         firebaseUser= FirebaseAuth.getInstance().getCurrentUser();
 
-        date = "11/28/20";
-        time = "5:13 PM";
+        date = new SimpleDateFormat("MM/dd/yy", Locale.US).format(Calendar.getInstance().getTime());
+        time = new SimpleDateFormat("hh:mm a").format(Calendar.getInstance().getTime());
 
         title=findViewById(R.id.noteDetailsTitle);
         content=findViewById(R.id.contentid);
@@ -149,7 +151,7 @@ public class Note_details extends AppCompatActivity {
     public void openReminderDialog(MenuItem item){
         final MenuItem[] itemList = new MenuItem[1]; itemList[0] = item;
 
-        AlertDialog.Builder mbuilder = new AlertDialog.Builder(this);
+        AlertDialog.Builder mbuilder = new AlertDialog.Builder(Note_details.this);
         View mview = getLayoutInflater().inflate(R.layout.dialog, null);
 
         message = mview.findViewById(R.id.message);
@@ -214,7 +216,7 @@ public class Note_details extends AppCompatActivity {
             public void onClick(View v) {
                 frequency = mspinner.getSelectedItem().toString();
 
-                Intent intent = new Intent(getApplication(), com.example.timer.AlarmReceiver.class);
+                Intent intent = new Intent(getApplication(), com.example.activitytracker.AlarmReceiver.class);
                 intent.putExtra("notificationId", notificationId);
                 intent.putExtra("notificationTitle", reminderTitle);
                 intent.putExtra("notificationMsg", message.getText().toString());

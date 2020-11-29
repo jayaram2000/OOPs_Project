@@ -156,16 +156,7 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
                     public void onClick(View v) {
                         PopupMenu menu = new PopupMenu(v.getContext(), v);
                         menu.setGravity(Gravity.START);
-                        menu.getMenu().add("Set Reminder").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                                                                                          @Override
-                                                                                          public boolean onMenuItemClick(MenuItem item) {
-                                                                                              Intent reminder = new Intent(getApplicationContext(), Remindermain.class);
-                                                                                              startActivity(reminder);
-                                                                                              return false;
-                                                                                          }
 
-                                                                                      }
-                        );
 
                         menu.getMenu().add("Share").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                             @Override
@@ -333,7 +324,7 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
     }
 
 
-    @Override
+   /* @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.search_bar, menu);
         MenuItem item = menu.findItem(R.id.action_search);
@@ -357,7 +348,7 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
         });
         return super.onCreateOptionsMenu(menu);
     }
-
+*/
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -373,7 +364,9 @@ public class DashboardMainActivity extends AppCompatActivity implements Navigati
                 finish();
             }
             case R.id.notes: {
-                break;
+                finish();
+                startActivity(getIntent());
+
             }
         }
         return false;

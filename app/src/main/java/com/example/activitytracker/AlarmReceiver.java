@@ -1,4 +1,4 @@
-package com.example.timer;
+package com.example.activitytracker;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,7 +11,7 @@ import androidx.core.app.NotificationCompat;
 
 public class AlarmReceiver extends BroadcastReceiver {
 
-    private static final String CHANNEL_ID = "CHANNEL_SAMPLE";
+    private static final String CHANNEL_ID = "MAIN_CHANNEL";//CHANNEL_SAMPLE";
 
     @Override
     public void onReceive(Context context, Intent intent) {
